@@ -1,3 +1,11 @@
+--[[
+	EzHook by Enomphia.
+	
+	Github: https://www.github.com/Enomphia
+	Roblox: https://www.roblox.com/users/230817489/profile
+	Twitter: https://www.twitter.com/Enomphia
+--]]
+
 local HttpService = game:GetService("HttpService")
 
 local JSON = {
@@ -5,33 +13,41 @@ local JSON = {
 	Decode = function(...)return HttpService:JSONDecode(...)end
 }
 
-local Discord = {}
-Discord.__index = Discord
+local EzHook = {}
+EzHook.__index = EzHook
 
-function Discord.new(WebhookUrl)
-	local t = setmetatable({}, Discord)
-	
-	t.WebhookUrl = WebhookUrl
-	t.Name = nil
-	t.AvatarUrl = nil
-	
-	return t
+function EzHook.new(url)
+	return setmetatable(
+		{
+			_url = url,
+			_embeds = {},
+			_avatarUrl = nil,
+			_username = nil
+		},
+		EzHook
+	)
 end
 
-function Discord:SetName(Name)
-	self.Name = Name
+function EzHook:SetName(name)
+	print(name)
+	self._username = name
 end
 
-function Discord:SetAvatarUrl(url)
-	self.AvatarUrl = url
+function EzHook:SetAvatarUrl(url)
+	self._avatarUrl = url
 end
 
-function Discord:Send(msg)
-	return HttpService:PostAsync(self.WebhookUrl, JSON.Encode({
-		['avatar_url'] = self.AvatarUrl,
-		['content'] = msg,
-		['username'] = self.Name
+function EzHook:CreateEmbed(_table)
+	table.insert(self._embeds, _table)
+end
+
+function EzHook:Send(content)
+	return HttpService:PostAsync(self._url, JSON.Encode({
+		['content'] = content,
+		['username'] = self._username,
+		['avatar_url'] = self._avatarUrl,
+		['embeds'] = self._embeds
 	}))
 end
 
-return Discord
+return EzHook
